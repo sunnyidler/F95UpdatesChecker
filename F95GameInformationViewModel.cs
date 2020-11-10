@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using Flurl.Http;
 
 namespace F95UpdatesChecker
 {
-    public class F95GameInfoViewModel : BaseViewModel
+    public class F95GameInfoViewModel : BaseViewModel, IEquatable<F95GameInfoViewModel>
     {
         #region Properties
 
@@ -136,7 +137,7 @@ namespace F95UpdatesChecker
             var threadName = await GetGameThreadNameAsync();
             if (threadName == null)
             {
-                MessageBox.Show($"Couldn\'t find thread \"{gameInfo.Id}\". Make sure you entered it correctly!", "Error!");
+                Tools.ShowErrorMessage($"Couldn\'t find thread \"{gameInfo.Id}\". Make sure you entered it correctly!");
                 return false;
             }
             else
@@ -154,8 +155,6 @@ namespace F95UpdatesChecker
         #endregion
 
         #region Private methods
-
-
 
         private async Task<string> GetGameThreadNameAsync()
         {
@@ -209,6 +208,14 @@ namespace F95UpdatesChecker
                     }
 
             return null;
+        }
+
+        public bool Equals(F95GameInfoViewModel other)
+        {
+            if (other == null)
+                return false;
+
+            return Name == other.Name;
         }
 
         #endregion

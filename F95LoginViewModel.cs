@@ -97,7 +97,7 @@ namespace F95UpdatesChecker
             var response = await httpClient.Request(F95Urls.LoginUrlPathSegment).PostUrlEncodedAsync(loginPayload);
 
             if (!response.IsSuccessStatusCode)
-                MessageBox.Show($"Something went wrong. {response.ReasonPhrase}", "Error!");
+                Tools.ShowErrorMessage($"Something went wrong. {response.ReasonPhrase}");
             else
                 SaveLoginCredentialsToFileAsync();
 

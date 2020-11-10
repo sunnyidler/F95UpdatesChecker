@@ -402,19 +402,24 @@ namespace F95UpdatesChecker
                     }
                     catch
                     {
-                        MessageBox.Show("Couldn\'t find requested thread. Make sure you entered it correctly.", "Error!");
+                        Tools.ShowErrorMessage("Couldn\'t find requested thread. Make sure you entered it correctly.");
                         return;
                     }
 
                     if (!isInitializationSuccessfull)
-                        MessageBox.Show($"Couldn\'t find thread \"{gameInfoViewModel.GameInfo.Id}\". Make sure you entered it correctly.", "Error!");
+                        Tools.ShowErrorMessage($"Couldn\'t find thread \"{gameInfoViewModel.GameInfo.Id}\". Make sure you entered it correctly.");
                     else
                     {
-                        GameInfoViewModelsCollection.Add(gameInfoViewModel);
-                        SortGameInfoViewModelsCollection();
-                        gameInfoViewModelsListView.ScrollIntoView(gameInfoViewModel);
+                        if (!GameInfoViewModelsCollection.Contains(gameInfoViewModel))
+                        {
+                            GameInfoViewModelsCollection.Add(gameInfoViewModel);
+                            SortGameInfoViewModelsCollection();
+                            gameInfoViewModelsListView.ScrollIntoView(gameInfoViewModel);
 
-                        HaveChanges = true;
+                            HaveChanges = true;
+                        }
+                        else
+                            Tools.ShowInformationMessage("Game is already in collection.");
                     }
 
                     AddGameInfoRunning = false;
@@ -478,11 +483,11 @@ namespace F95UpdatesChecker
                     }
                     catch
                     {
-                        MessageBox.Show("Unable to save games collection. Something went wrong.", "Error!");
+                        Tools.ShowErrorMessage("Unable to save games collection. Something went wrong.");
                         return;
                     }
 
-                    MessageBox.Show("Games collection succcessfuly saved.", "Success!");
+                    Tools.ShowInformationMessage("Games collection succcessfuly saved.");
 
                     HaveChanges = false;
 
@@ -512,7 +517,7 @@ namespace F95UpdatesChecker
                     catch
                     {
                         CurrentlyUpdatingGameInfoIndex = 0;
-                        MessageBox.Show("Unable to get latest game versions. Something went wrong.", "Error!");
+                        Tools.ShowErrorMessage("Unable to get latest game versions. Something went wrong.");
                         return;
                     }
 
@@ -535,7 +540,7 @@ namespace F95UpdatesChecker
                     }
                     catch
                     {
-                        MessageBox.Show("Unable to open thread in browser. Something went wrong.", "Error!");
+                        Tools.ShowErrorMessage("Unable to open thread in browser. Something went wrong.");
                     }
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
@@ -593,21 +598,18 @@ namespace F95UpdatesChecker
         {
             CollectionViewSource.GetDefaultView(GameInfoViewModelsCollection).Filter = (object item) =>
             {
-                if (string.IsNullOrWhiteSpace(UserInputString) || UserInputString.Contains(F95Urls.SiteUrl))
+                var userInputStringLower = UserInputString?.ToLowerInvariant();
+                if (string.IsNullOrWhiteSpace(userInputStringLower) || userInputStringLower.Contains(F95Urls.SiteUrl.ToLowerInvariant()))
                     return true;
 
-                return !(item is F95GameInfoViewModel gameInfoViewModel) || gameInfoViewModel.Name.Contains(UserInputString);
+                return !(item is F95GameInfoViewModel gameInfoViewModel) || gameInfoViewModel.Name.ToLowerInvariant().Contains(userInputStringLower);
             };
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (HaveChanges)
-            {
-                var result = MessageBox.Show("Games collection changed. Save changes?", "Warning!", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes)
-                    F95GameInfoCollectionCommands.SaveGameInfoCollection.Execute(null, this);
-            }
+            if (HaveChanges && (Tools.ShowQuestionMessage("Games collection changed. Save changes?") == MessageBoxResult.Yes))
+                F95GameInfoCollectionCommands.SaveGameInfoCollection.Execute(null, this);
         }
 
         private void OpenUrlInDefaultBrowser(string url)
@@ -637,7 +639,7 @@ namespace F95UpdatesChecker
                 }
                 else
                 {
-                    MessageBox.Show("Unable to open url.", "Error!");
+                    Tools.ShowErrorMessage("Unable to open url.");
                 }
             }
         }
@@ -694,6 +696,33 @@ namespace F95UpdatesChecker
         private void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+    }
+
+    public static class Tools
+    {
+        #region Public methods
+
+        public static void ShowErrorMessage(string message)
+        {
+            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        public static void ShowWarningMessage(string message)
+        {
+            MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        public static void ShowInformationMessage(string message)
+        {
+            MessageBox.Show(message, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        public static MessageBoxResult ShowQuestionMessage(string message)
+        {
+            return MessageBox.Show(message, "Information", MessageBoxButton.YesNo, MessageBoxImage.Information);
         }
 
         #endregion
