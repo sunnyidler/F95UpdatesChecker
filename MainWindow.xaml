@@ -206,7 +206,6 @@
                 <Button Style="{StaticResource buttonStyle}" Margin="10,0,10,0" Content="Get latest versions" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center"
                         Command="{x:Static local:F95GameInfoCollectionCommands.GetLatestGameVersionsCommand}"/>
             </StackPanel>
-            <Button Style="{StaticResource buttonStyle}" Margin="10,0,10,0" Content="Relogin" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{x:Static local:F95LoginCommands.ReloginCommand}"/>
             <ProgressBar Minimum="0" Maximum="{Binding GameInfoViewModelsCollection.Count}" Value="{Binding CurrentlyUpdatingGameInfoIndex, Mode=OneWay}" Height="5" VerticalAlignment="Bottom">
                 <ProgressBar.Style>
                     <Style TargetType="ProgressBar">

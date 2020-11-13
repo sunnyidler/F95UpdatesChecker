@@ -278,10 +278,6 @@ namespace F95UpdatesChecker
         /// HTTP client.
         /// </summary>
         private FlurlClient httpClient;
-        /// <summary>
-        /// View model of login window.
-        /// </summary>
-        private F95LoginViewModel loginViewModel;
 
         /// <summary>
         /// Collection of game info view models.
@@ -363,16 +359,6 @@ namespace F95UpdatesChecker
         {
             // HTTP client initialization
             httpClient = new FlurlClient(F95Urls.SiteUrl).EnableCookies();
-
-            // Checking if login credentials are loaded and try to login
-            LoginRunning = true;
-            loginViewModel = new F95LoginViewModel(httpClient);
-            var isLoginCredentialsLoaded = await loginViewModel.LoadLoginCredentialsFromFileAsync();
-            if (!isLoginCredentialsLoaded)
-                ShowLoginWindow();
-            else
-                _ = await loginViewModel.LoginAsync();
-            LoginRunning = false;
 
             // Loding saved game infos collection
             var gameInfoCollection = await F95GameInfoTools.LoadGameInfoCollectionFromFileAsync();
@@ -459,19 +445,6 @@ namespace F95UpdatesChecker
                 {
                     e1.CanExecute = (e1.Parameter is F95GameInfoViewModel gameInfoViewModel) && !gameInfoViewModel.AreVersionsMatch && !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionsRunning;
                 }));
-            CommandBindings.Add(new CommandBinding(F95LoginCommands.ReloginCommand,
-                (object sender1, ExecutedRoutedEventArgs e1) =>
-                {
-                    LoginRunning = true;
-
-                    ShowLoginWindow();
-
-                    LoginRunning = false;
-                },
-                (object sender1, CanExecuteRoutedEventArgs e1) =>
-                {
-                    e1.CanExecute = !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionsRunning;
-                }));
             CommandBindings.Add(new CommandBinding(F95GameInfoCollectionCommands.SaveGameInfoCollection,
                 async (object sender1, ExecutedRoutedEventArgs e1) =>
                 {
@@ -549,19 +522,6 @@ namespace F95UpdatesChecker
                 }));
 
             CommandManager.InvalidateRequerySuggested();
-        }
-
-        private void ShowLoginWindow()
-        {
-            var loginWindow = new F95LoginWIndow(loginViewModel)
-            {
-                Owner = this,
-                ShowActivated = true,
-                ShowInTaskbar = true,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            loginWindow.ShowDialog();
         }
 
         private void SortGameInfoViewModelsCollection()

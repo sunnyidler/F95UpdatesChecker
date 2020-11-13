@@ -58,10 +58,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="F95LoginWIndow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,10 +68,6 @@
     </Compile>
     <Compile Include="BaseViewModel.cs" />
     <Compile Include="F95GameInformationViewModel.cs" />
-    <Compile Include="F95LoginViewModel.cs" />
-    <Compile Include="F95LoginWIndow.xaml.cs">
-      <DependentUpon>F95LoginWIndow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
