@@ -74,7 +74,11 @@ namespace F95UpdatesChecker
         /// <summary>
         /// Games without current version first, then alphabetical.
         /// </summary>
-        WithoutCurrentVersionFirst = 2
+        WithoutCurrentVersionFirst = 2,
+        /// <summary>
+        /// Games which latest version hasn't been played first.
+        /// </summary>
+        UnfinishedFirst = 3
     }
 
     public class SortOrderToStringConverter : IValueConverter
@@ -93,6 +97,8 @@ namespace F95UpdatesChecker
                         return "Not updated first";
                     case SortOrder.WithoutCurrentVersionFirst:
                         return "Without current version first";
+                    case SortOrder.UnfinishedFirst:
+                        return "Unfinished first";
                     default:
                         return sortOrder.ToString();
                 }
@@ -296,6 +302,7 @@ namespace F95UpdatesChecker
         {
             SortOrder.Alphabetical,
             SortOrder.NotUpdatedFirst,
+            SortOrder.UnfinishedFirst,
             SortOrder.WithoutCurrentVersionFirst
         };
         /// <summary>
@@ -434,7 +441,7 @@ namespace F95UpdatesChecker
                 {
                     if (e1.Parameter is F95GameInfoViewModel gameInfoViewModel)
                     {
-                        gameInfoViewModel.CurrentVersion = gameInfoViewModel.LatestVersion;
+                        gameInfoViewModel.SyncVersions();
                         SortGameInfoViewModelsCollection();
                         //gameInfoViewModelsListView.ScrollIntoView(gameInfoViewModel);
 
@@ -534,23 +541,58 @@ namespace F95UpdatesChecker
             {
                 collectionView.SortDescriptions.Clear();
 
+                void AddAlphabeticalSortOrder(ListSortDirection sortDirection = ListSortDirection.Ascending)
+                {
+                    collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.Name), sortDirection));
+                }
+
+                void AddFavoriteSortOrder(ListSortDirection sortDirection = ListSortDirection.Descending)
+                {
+                    if (GivePriorityToFavoritesWhileSorting)
+                        collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.IsFavorite), sortDirection));
+                }
+
+                void AddAreVersionsMatchSortOrder(ListSortDirection sortDirection = ListSortDirection.Ascending)
+                {
+                    collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.AreVersionsMatch), sortDirection));
+                }
+
+                void AddHasCurrentVersionSortOrder(ListSortDirection sortDirection = ListSortDirection.Ascending)
+                {
+                    collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.HasCurrentVersion), sortDirection));
+                }
+
+                void AddIsVersionFinishedSortOrder(ListSortDirection sortDirection = ListSortDirection.Ascending)
+                {
+                    collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.IsVersionFinished), sortDirection));
+                }
+
                 switch (SortOrder)
                 {
                     case SortOrder.Alphabetical:
+                        AddFavoriteSortOrder();
+                        AddAlphabeticalSortOrder();
                         break;
                     case SortOrder.NotUpdatedFirst:
-                        collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.AreVersionsMatch), ListSortDirection.Ascending));
+                        AddAreVersionsMatchSortOrder();
+                        AddFavoriteSortOrder();
+                        AddHasCurrentVersionSortOrder(ListSortDirection.Descending);
+                        AddAlphabeticalSortOrder();
                         break;
                     case SortOrder.WithoutCurrentVersionFirst:
-                        collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.HasCurrentVersion), ListSortDirection.Ascending));
+                        AddHasCurrentVersionSortOrder();
+                        AddFavoriteSortOrder();
+                        AddAlphabeticalSortOrder();
+                        break;
+                    case SortOrder.UnfinishedFirst:
+                        AddIsVersionFinishedSortOrder();
+                        AddFavoriteSortOrder();
+                        AddHasCurrentVersionSortOrder(ListSortDirection.Descending);
+                        AddAlphabeticalSortOrder();
                         break;
                     default:
                         break;
                 }
-
-                if (GivePriorityToFavoritesWhileSorting)
-                    collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.IsFavorite), ListSortDirection.Descending));
-                collectionView.SortDescriptions.Add(new SortDescription(nameof(F95GameInfoViewModel.Name), ListSortDirection.Ascending));
             }
         }
 
@@ -635,6 +677,18 @@ namespace F95UpdatesChecker
                 listView.Focus();
         }
 
+        private void IsVersionFinishedCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            HaveChanges = true;
+            SortGameInfoViewModelsCollection();
+        }
+
+        private void IsVersionFinishedCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            HaveChanges = true;
+            SortGameInfoViewModelsCollection();
+        }
+
         private void IsFavoriteCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             HaveChanges = true;
@@ -659,6 +713,7 @@ namespace F95UpdatesChecker
         }
 
         #endregion
+
     }
 
     public static class Tools

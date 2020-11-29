@@ -68,6 +68,19 @@ namespace F95UpdatesChecker
             }
         }
 
+        public bool IsVersionFinished
+        {
+            get => gameInfo.IsVersionFinished;
+            set
+            {
+                if (gameInfo.IsVersionFinished != value)
+                {
+                    gameInfo.IsVersionFinished = value;
+                    RaisePropertyChanged(nameof(IsVersionFinished));
+                }
+            }
+        }
+
         public bool AreVersionsMatch => CurrentVersion == LatestVersion;
 
         public bool HasCurrentVersion => CurrentVersion != F95GameInfo.NoVersionString;
@@ -150,6 +163,7 @@ namespace F95UpdatesChecker
         public void SyncVersions()
         {
             CurrentVersion = LatestVersion;
+            IsVersionFinished = false;
         }
 
         #endregion
@@ -269,6 +283,8 @@ namespace F95UpdatesChecker
         public string LatestVersion { get; set; } = NoVersionString;
 
         public bool IsFavorite { get; set; } = false;
+
+        public bool IsVersionFinished { get; set; } = false;
 
         #endregion
 

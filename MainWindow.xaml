@@ -86,6 +86,14 @@
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
+                                    <GridViewColumn x:Name="syncColumn" Header="Sync" Width="{Binding ElementName=syncColumnHelperGrid, Path=ActualWidth}">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="⇄" Width="30" Height="30" Margin="5" HorizontalAlignment="Center" ToolTip="Sync with latest version"
+                                                        Command="{x:Static local:F95GameInfoCollectionCommands.SyncGameVersionsCommand}" CommandParameter="{Binding .}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
                                     <GridViewColumn x:Name="currentVersionColumn" Header="Current version" Width="{Binding ElementName=currentVersionColumnHelperGrid, Path=ActualWidth}">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -95,19 +103,19 @@
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
+                                    <GridViewColumn x:Name="versionFinishedColumn" Header="Finished" Width="{Binding ElementName=versionFinishedColumnHelperGrid, Path=ActualWidth}">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox x:Name="isVersionFinishedCheckBox" Margin="10,0,0,0" Content="" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                          IsChecked="{Binding IsVersionFinished}" Checked="IsVersionFinishedCheckBox_Checked" Unchecked="IsVersionFinishedCheckBox_Unchecked"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
                                     <GridViewColumn x:Name="favoriteColumn" Header="Favorite" Width="{Binding ElementName=favoriteColumnHelperGrid, Path=ActualWidth}">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
                                                 <CheckBox x:Name="isFavoriteCheckBox" Margin="10,0,0,0" Content="" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                                           IsChecked="{Binding IsFavorite}" Checked="IsFavoriteCheckBox_Checked" Unchecked="IsFavoriteCheckBox_Unchecked"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn x:Name="syncColumn" Header="Sync" Width="{Binding ElementName=syncColumnHelperGrid, Path=ActualWidth}">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Content="⇄" Width="30" Height="30" Margin="5" HorizontalAlignment="Center" ToolTip="Sync with latest version"
-                                                        Command="{x:Static local:F95GameInfoCollectionCommands.SyncGameVersionsCommand}" CommandParameter="{Binding .}"/>
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -172,6 +180,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="60"/>
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="90"/>
                         <ColumnDefinition Width="90"/>
@@ -180,10 +189,11 @@
                     <!-- This are the hidden helper grids which are used to bind to -->
                     <Grid Grid.Column="0" x:Name="nameColumnHelperGrid" MinWidth="200"/>
                     <Grid Grid.Column="1" x:Name="latestVersionColumnHelperGrid"/>
-                    <Grid Grid.Column="2" x:Name="currentVersionColumnHelperGrid"/>
-                    <Grid Grid.Column="3" x:Name="favoriteColumnHelperGrid"/>
-                    <Grid Grid.Column="4" x:Name="syncColumnHelperGrid"/>
-                    <Grid Grid.Column="5" x:Name="openColumnHelperGrid"/>
+                    <Grid Grid.Column="2" x:Name="syncColumnHelperGrid"/>
+                    <Grid Grid.Column="3" x:Name="currentVersionColumnHelperGrid"/>
+                    <Grid Grid.Column="4" x:Name="versionFinishedColumnHelperGrid"/>
+                    <Grid Grid.Column="5" x:Name="favoriteColumnHelperGrid"/>
+                    <Grid Grid.Column="6" x:Name="openColumnHelperGrid"/>
                 </Grid>
             </Grid>
         </Border>
