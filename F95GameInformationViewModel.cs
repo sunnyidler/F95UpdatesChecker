@@ -150,12 +150,20 @@ namespace F95UpdatesChecker
             var threadName = await GetGameThreadNameAsync();
             if (threadName == null)
             {
-                Tools.ShowErrorMessage($"Couldn\'t find thread \"{gameInfo.Id}\". Make sure you entered it correctly!");
+                Tools.ShowErrorMessage($"Couldn\'t find thread \"{gameInfo.Id}\". Make sure it exists and you entered it correctly!");
                 return false;
             }
             else
             {
-                LatestVersion = GetGameVersion(threadName);
+                var newLatestVersion = GetGameVersion(threadName);
+                if (newLatestVersion != null)
+                    LatestVersion = newLatestVersion;
+                else
+                {
+                    Tools.ShowErrorMessage($"Couldn\'t get game version from thread \"{gameInfo.Id}\"!");
+                    return false;
+                }
+
                 return true;
             }
         }
@@ -172,14 +180,21 @@ namespace F95UpdatesChecker
 
         private async Task<string> GetGameThreadNameAsync()
         {
-            var response = await httpClient.Request(F95Urls.ThreadsUrlPathSegment, gameInfo.Id).GetAsync();
-            var responseContent = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var response = await httpClient.Request(F95Urls.ThreadsUrlPathSegment, gameInfo.Id).GetAsync();
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-            var htmlParser = new HtmlParser();
-            var parsedResponseContent = await htmlParser.ParseDocumentAsync(responseContent);
+                var htmlParser = new HtmlParser();
+                var parsedResponseContent = await htmlParser.ParseDocumentAsync(responseContent);
 
-            var threadName = parsedResponseContent.QuerySelector("h1[class=\"p-title-value\"]")?.TextContent;
-            return threadName;
+                var threadName = parsedResponseContent.QuerySelector("h1[class=\"p-title-value\"]")?.TextContent;
+                return threadName;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static string GetGameName(string threadName)

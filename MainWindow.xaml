@@ -79,6 +79,14 @@
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
+                                    <GridViewColumn x:Name="getLatestVersionColumn" Header="Check" Width="{Binding ElementName=getLatestVersionColumnHelperGrid, Path=ActualWidth}">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="⟳" Width="30" Height="30" Margin="5" HorizontalAlignment="Center" ToolTip="Check for updates"
+                                                        Command="{x:Static local:F95GameInfoCollectionCommands.GetLatestGameVersionCommand}" CommandParameter="{Binding .}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
                                     <GridViewColumn x:Name="latestVersionColumn" Header="Latest version" Width="{Binding ElementName=latestVersionColumnHelperGrid, Path=ActualWidth}">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -179,6 +187,7 @@
                 <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,5,0,0" Visibility="Hidden">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="60"/>
                         <ColumnDefinition Width="200"/>
@@ -188,12 +197,13 @@
                     </Grid.ColumnDefinitions>
                     <!-- This are the hidden helper grids which are used to bind to -->
                     <Grid Grid.Column="0" x:Name="nameColumnHelperGrid" MinWidth="200"/>
-                    <Grid Grid.Column="1" x:Name="latestVersionColumnHelperGrid"/>
-                    <Grid Grid.Column="2" x:Name="syncColumnHelperGrid"/>
-                    <Grid Grid.Column="3" x:Name="currentVersionColumnHelperGrid"/>
-                    <Grid Grid.Column="4" x:Name="versionFinishedColumnHelperGrid"/>
-                    <Grid Grid.Column="5" x:Name="favoriteColumnHelperGrid"/>
-                    <Grid Grid.Column="6" x:Name="openColumnHelperGrid"/>
+                    <Grid Grid.Column="1" x:Name="getLatestVersionColumnHelperGrid"/>
+                    <Grid Grid.Column="2" x:Name="latestVersionColumnHelperGrid"/>
+                    <Grid Grid.Column="3" x:Name="syncColumnHelperGrid"/>
+                    <Grid Grid.Column="4" x:Name="currentVersionColumnHelperGrid"/>
+                    <Grid Grid.Column="5" x:Name="versionFinishedColumnHelperGrid"/>
+                    <Grid Grid.Column="6" x:Name="favoriteColumnHelperGrid"/>
+                    <Grid Grid.Column="7" x:Name="openColumnHelperGrid"/>
                 </Grid>
             </Grid>
         </Border>
@@ -213,7 +223,7 @@
                 </StackPanel>
                 <Button Style="{StaticResource buttonStyle}" Margin="10,0,10,0" Content="Save changes" Width="90" VerticalAlignment="Center" 
                         Command="{x:Static local:F95GameInfoCollectionCommands.SaveGameInfoCollection}"/>
-                <Button Style="{StaticResource buttonStyle}" Margin="10,0,10,0" Content="Get latest versions" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center"
+                <Button x:Name="getLatestGameVersionsButton" Style="{StaticResource buttonStyle}" Margin="10,0,10,0" Content="Check for updates" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center"
                         Command="{x:Static local:F95GameInfoCollectionCommands.GetLatestGameVersionsCommand}"/>
             </StackPanel>
             <ProgressBar Minimum="0" Maximum="{Binding GameInfoViewModelsCollection.Count}" Value="{Binding CurrentlyUpdatingGameInfoIndex, Mode=OneWay}" Height="5" VerticalAlignment="Bottom">
