@@ -537,6 +537,7 @@ namespace F95UpdatesChecker
                     SortGameInfoViewModelsCollection();
                     HaveChanges = true;
                     GetLatestVersionsRunning = false;
+                    getLatestGameVersionsButton.Content = "Check for updates";
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
