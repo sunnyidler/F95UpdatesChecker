@@ -202,7 +202,7 @@ namespace F95UpdatesChecker
             try
             {
                 var response = await httpClient.Request(F95Urls.ThreadsUrlPathSegment, gameInfo.Id).GetAsync();
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseContent = await response.ResponseMessage.Content.ReadAsStringAsync();
 
                 var htmlParser = new HtmlParser();
                 var parsedResponseContent = await htmlParser.ParseDocumentAsync(responseContent);
@@ -312,7 +312,7 @@ namespace F95UpdatesChecker
 
         public string Name { get; set; }
 
-        public string Group { get; set; }
+        public string Group { get; set; } = EmptyFieldString;
 
         public string CurrentVersion { get; set; } = EmptyFieldString;
 
