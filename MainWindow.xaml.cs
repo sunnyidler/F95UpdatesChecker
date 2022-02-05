@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flurl.Http;
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,8 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-
-using Flurl.Http;
 
 namespace F95UpdatesChecker
 {
@@ -471,7 +470,7 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = (e1.Parameter is F95GameInfoViewModel gameInfoViewModel) && !gameInfoViewModel.AreVersionsMatch && !AddGameInfoRunning && !LoginRunning && 
+                    e1.CanExecute = (e1.Parameter is F95GameInfoViewModel gameInfoViewModel) && !gameInfoViewModel.AreVersionsMatch && !AddGameInfoRunning && !LoginRunning &&
                         !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
                 }));
             CommandBindings.Add(new CommandBinding(F95GameInfoCollectionCommands.SaveGameInfoCollection,
@@ -514,16 +513,16 @@ namespace F95UpdatesChecker
                             break;
                         }
 
+                        var haveChanges = false;
                         try
                         {
-                            await gameInfoViewModel.RefreshLatestVersionAsync();
+                            haveChanges |= await gameInfoViewModel.RefreshLatestVersionAsync();
                         }
                         catch
                         {
                             CurrentlyUpdatingGameInfoIndex = 0;
                             getLatestGameVersionsButton.Content = "Check for updates";
                             SortGameInfoViewModelsCollection();
-                            HaveChanges = true;
                             GetLatestVersionsRunning = false;
 
                             Tools.ShowErrorMessage("Unable to check for updates. Something went wrong.");
@@ -535,7 +534,7 @@ namespace F95UpdatesChecker
                     CurrentlyUpdatingGameInfoIndex = 0;
 
                     SortGameInfoViewModelsCollection();
-                    HaveChanges = true;
+                    HaveChanges = haveChanges;
                     GetLatestVersionsRunning = false;
                     getLatestGameVersionsButton.Content = "Check for updates";
                 },
@@ -550,14 +549,14 @@ namespace F95UpdatesChecker
                     {
                         GetLatestVersionRunning = true;
 
+                        var haveChanges = false;
                         try
                         {
-                            await gameInfoViewModel.RefreshLatestVersionAsync();
+                            haveChanges = await gameInfoViewModel.RefreshLatestVersionAsync();
                         }
                         catch
                         {
                             SortGameInfoViewModelsCollection();
-                            HaveChanges = true;
                             GetLatestVersionRunning = false;
 
                             Tools.ShowErrorMessage("Unable to check for updates. Something went wrong.");
@@ -565,7 +564,7 @@ namespace F95UpdatesChecker
                         }
 
                         SortGameInfoViewModelsCollection();
-                        HaveChanges = true;
+                        HaveChanges = haveChanges;
                         GetLatestVersionRunning = false;
                     }
                 },
@@ -717,21 +716,35 @@ namespace F95UpdatesChecker
 
         private void CurrentVersionTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if ((sender is TextBox textBox) && (e.Key == Key.Enter))
-            {
-                textBox.IsReadOnly = true;
-                textBox.SelectionStart = 0;
-            }
+            if ((sender is TextBox textBox) && (e.Key == Key.Enter) && OnCurrentVersionChangedByUser(textBox))
+                HaveChanges = true;
         }
 
         private void CurrentVersionTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox textBox)
             {
-                textBox.IsReadOnly = true;
-                textBox.SelectionStart = 0;
                 gameInfoViewModelsListView.Focus();
+                if (OnCurrentVersionChangedByUser(textBox))
+                    HaveChanges = true;
             }
+        }
+
+        private bool OnCurrentVersionChangedByUser(TextBox currentVersionTextBox)
+        {
+            currentVersionTextBox.IsReadOnly = true;
+            currentVersionTextBox.SelectionStart = 0;
+
+            var gameInfoViewModel = currentVersionTextBox.DataContext as F95GameInfoViewModel;
+            var actualCurrentVersion = gameInfoViewModel?.CurrentVersion;
+            var newCurrentVersion = currentVersionTextBox.Text;
+            if ((actualCurrentVersion != null) && (actualCurrentVersion != newCurrentVersion))
+            {
+                gameInfoViewModel.CurrentVersion = newCurrentVersion;
+                return true;
+            }
+            else
+                return false;
         }
 
         private void GameInfoViewModelsListView_MouseDown(object sender, MouseButtonEventArgs e)

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using AngleSharp.Html.Parser;
+
+using Flurl.Http;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows;
-
-using AngleSharp.Html.Parser;
-
-using Flurl.Http;
 
 namespace F95UpdatesChecker
 {
@@ -27,6 +26,19 @@ namespace F95UpdatesChecker
                 }
             }
         }
+        public string Group
+        {
+            get => gameInfo.Group;
+            set
+            {
+                if (gameInfo.Group != value)
+                {
+                    gameInfo.Group = value;
+                    RaisePropertyChanged(nameof(Group));
+                }
+            }
+        }
+
         public string CurrentVersion
         {
             get => gameInfo.CurrentVersion;
@@ -83,7 +95,7 @@ namespace F95UpdatesChecker
 
         public bool AreVersionsMatch => CurrentVersion == LatestVersion;
 
-        public bool HasCurrentVersion => CurrentVersion != F95GameInfo.NoVersionString;
+        public bool HasCurrentVersion => CurrentVersion != F95GameInfo.EmptyFieldString;
 
         public F95GameInfo GameInfo
         {
@@ -95,6 +107,7 @@ namespace F95UpdatesChecker
                     gameInfo = value;
                     RaisePropertyChanged(nameof(GameInfo));
                     RaisePropertyChanged(nameof(Name));
+                    RaisePropertyChanged(nameof(Group));
                     RaisePropertyChanged(nameof(CurrentVersion));
                     RaisePropertyChanged(nameof(LatestVersion));
                     RaisePropertyChanged(nameof(AreVersionsMatch));
@@ -157,14 +170,20 @@ namespace F95UpdatesChecker
             {
                 var newLatestVersion = GetGameVersion(threadName);
                 if (newLatestVersion != null)
-                    LatestVersion = newLatestVersion;
+                {
+                    if (LatestVersion != newLatestVersion)
+                    {
+                        LatestVersion = newLatestVersion;
+                        return true;
+                    }
+                    else
+                        return false;
+                }
                 else
                 {
                     Tools.ShowErrorMessage($"Couldn\'t get game version from thread \"{gameInfo.Id}\"!");
                     return false;
                 }
-
-                return true;
             }
         }
 
@@ -293,9 +312,11 @@ namespace F95UpdatesChecker
 
         public string Name { get; set; }
 
-        public string CurrentVersion { get; set; } = NoVersionString;
+        public string Group { get; set; }
 
-        public string LatestVersion { get; set; } = NoVersionString;
+        public string CurrentVersion { get; set; } = EmptyFieldString;
+
+        public string LatestVersion { get; set; } = EmptyFieldString;
 
         public bool IsFavorite { get; set; } = false;
 
@@ -305,7 +326,7 @@ namespace F95UpdatesChecker
 
         #region Public fields
 
-        public const string NoVersionString = "-";
+        public const string EmptyFieldString = "-";
 
         #endregion
 

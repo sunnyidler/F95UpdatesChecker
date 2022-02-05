@@ -105,7 +105,7 @@
                                     <GridViewColumn x:Name="currentVersionColumn" Header="Current version" Width="{Binding ElementName=currentVersionColumnHelperGrid, Path=ActualWidth}">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBox x:Name="currentVersionTextBox" Text="{Binding CurrentVersion, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                <TextBox x:Name="currentVersionTextBox" Text="{Binding CurrentVersion, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Center" 
                                                          Style="{StaticResource editableField}" IsReadOnly="True" MouseDoubleClick="CurrentVersionTextBox_MouseDoubleClick" KeyDown="CurrentVersionTextBox_KeyDown" 
                                                          IsInactiveSelectionHighlightEnabled="False" AcceptsReturn="False" AcceptsTab="False" LostFocus="CurrentVersionTextBox_LostFocus"/>
                                             </DataTemplate>
