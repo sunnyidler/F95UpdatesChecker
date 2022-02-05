@@ -477,11 +477,11 @@ namespace F95UpdatesChecker
                 {
                     if (e1.Parameter is F95GameInfoViewModel gameInfoViewModel)
                     {
-                        gameInfoViewModel.SyncVersions();
+                        var haveChanges = gameInfoViewModel.SyncVersions();
                         SortGameInfoViewModelsCollection();
                         //gameInfoViewModelsListView.ScrollIntoView(gameInfoViewModel);
 
-                        HaveChanges = true;
+                        HaveChanges = haveChanges;
                     }
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
@@ -520,6 +520,8 @@ namespace F95UpdatesChecker
                     GetLatestVersionsRunning = !GetLatestVersionsRunning;
                     getLatestGameVersionsButton.Content = "Stop";
 
+                    var haveChanges = false;
+
                     CurrentlyUpdatingGameInfoIndex = 0;
                     foreach (var gameInfoViewModel in GameInfoViewModelsCollection)
                     {
@@ -529,7 +531,6 @@ namespace F95UpdatesChecker
                             break;
                         }
 
-                        var haveChanges = false;
                         try
                         {
                             haveChanges |= await gameInfoViewModel.RefreshLatestVersionAsync();
@@ -537,6 +538,7 @@ namespace F95UpdatesChecker
                         catch
                         {
                             CurrentlyUpdatingGameInfoIndex = 0;
+                            HaveChanges = haveChanges;
                             getLatestGameVersionsButton.Content = "Check for updates";
                             SortGameInfoViewModelsCollection();
                             GetLatestVersionsRunning = false;

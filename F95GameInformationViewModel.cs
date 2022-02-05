@@ -187,10 +187,17 @@ namespace F95UpdatesChecker
             }
         }
 
-        public void SyncVersions()
+        public bool SyncVersions()
         {
-            CurrentVersion = LatestVersion;
-            IsVersionFinished = false;
+            if (CurrentVersion != LatestVersion)
+            {
+                CurrentVersion = LatestVersion;
+                IsVersionFinished = false;
+
+                return true;
+            }
+            else
+                return false;
         }
 
         #endregion
