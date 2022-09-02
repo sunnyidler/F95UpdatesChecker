@@ -46,6 +46,12 @@
                                 Value="Transparent" />
                     </DataTrigger>
                 </Style.Triggers>
+                <Style.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                Value="3" />
+                    </Style>
+                </Style.Resources>
             </Style>
             <Style x:Key="ExpanderHeaderFocusVisual">
                 <Setter Property="Control.Template">
@@ -1387,7 +1393,6 @@
                     </Button.Content>
                 </Button>
 
-                <!--<Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,5,0,0" BorderBrush="LightGray" BorderThickness="1" CornerRadius="3">-->
                 <ListView x:Name="gameInfoViewModelsListView"
                           Grid.Row="2"
                           Grid.Column="0"
@@ -1681,7 +1686,7 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
-                                                <Expander IsExpanded="False"
+                                                <Expander IsExpanded="True"
                                                           Style="{StaticResource GroupExpander}">
                                                     <i:Interaction.Behaviors>
                                                         <local:PersistGroupExpandedStateBehavior GroupName="{Binding Name}" />
@@ -1709,7 +1714,6 @@
                         </GroupStyle>
                     </ListView.GroupStyle>
                 </ListView>
-                <!--</Border>-->
 
                 <!-- Hidden grid for GridView resizing -->
                 <Grid Grid.Row="2"
