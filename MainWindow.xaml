@@ -1627,7 +1627,7 @@
                                 <Setter.Value>
                                     <ContextMenu>
                                         <MenuItem Header="Copy text"
-                                                  Command="{x:Static local:F95UpdatesCheckerCommands.CopyTextCommand}"
+                                                  Command="{x:Static local:F95UpdatesCheckerCommands.CopyNameCommand}"
                                                   CommandParameter="{Binding .}" />
                                         <MenuItem Header="Copy link"
                                                   Command="{x:Static local:F95UpdatesCheckerCommands.CopyLinkCommand}"

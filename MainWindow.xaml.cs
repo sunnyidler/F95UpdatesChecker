@@ -51,7 +51,7 @@ namespace F95UpdatesChecker
         public static RoutedCommand AddGameInfoCommand = new RoutedCommand(nameof(AddGameInfoCommand), typeof(F95UpdatesCheckerCommands));
         public static RoutedCommand RemoveGameInfoCommand = new RoutedCommand(nameof(RemoveGameInfoCommand), typeof(F95UpdatesCheckerCommands));
 
-        public static RoutedCommand CopyTextCommand = new RoutedCommand(nameof(CopyTextCommand), typeof(F95UpdatesCheckerCommands));
+        public static RoutedCommand CopyNameCommand = new RoutedCommand(nameof(CopyNameCommand), typeof(F95UpdatesCheckerCommands));
         public static RoutedCommand CopyLinkCommand = new RoutedCommand(nameof(CopyLinkCommand), typeof(F95UpdatesCheckerCommands));
 
         public static RoutedCommand SyncGameVersionsCommand = new RoutedCommand(nameof(SyncGameVersionsCommand), typeof(F95UpdatesCheckerCommands));
@@ -465,9 +465,11 @@ namespace F95UpdatesChecker
                 {
                     e1.CanExecute = !IsSomeOperationRunning();
                 }));
-            CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CopyTextCommand,
+            CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CopyNameCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
                 {
+                    if (e1.Parameter is F95GameInfoViewModel gameInfoViewModel)
+                        Clipboard.SetText(gameInfoViewModel.Name);
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
@@ -476,6 +478,8 @@ namespace F95UpdatesChecker
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CopyLinkCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
                 {
+                    if (e1.Parameter is F95GameInfoViewModel gameInfoViewModel)
+                        Clipboard.SetText(gameInfoViewModel.GameInfo.Url);
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
