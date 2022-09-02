@@ -51,6 +51,9 @@ namespace F95UpdatesChecker
         public static RoutedCommand AddGameInfoCommand = new RoutedCommand(nameof(AddGameInfoCommand), typeof(F95UpdatesCheckerCommands));
         public static RoutedCommand RemoveGameInfoCommand = new RoutedCommand(nameof(RemoveGameInfoCommand), typeof(F95UpdatesCheckerCommands));
 
+        public static RoutedCommand CopyTextCommand = new RoutedCommand(nameof(CopyTextCommand), typeof(F95UpdatesCheckerCommands));
+        public static RoutedCommand CopyLinkCommand = new RoutedCommand(nameof(CopyLinkCommand), typeof(F95UpdatesCheckerCommands));
+
         public static RoutedCommand SyncGameVersionsCommand = new RoutedCommand(nameof(SyncGameVersionsCommand), typeof(F95UpdatesCheckerCommands));
 
         public static RoutedCommand GetLatestGameVersionCommand = new RoutedCommand(nameof(GetLatestGameVersionCommand), typeof(F95UpdatesCheckerCommands));
@@ -102,11 +105,11 @@ namespace F95UpdatesChecker
                     case SortOrder.Alphabetical:
                         return "Alphabetical";
                     case SortOrder.NotUpdatedFirst:
-                        return "Not updated first";
+                        return "Not updated";
                     case SortOrder.WithoutCurrentVersionFirst:
-                        return "Without current version first";
+                        return "No current version";
                     case SortOrder.UnfinishedFirst:
-                        return "Unfinished first";
+                        return "Unfinished";
                     default:
                         return sortOrder.ToString();
                 }
@@ -232,18 +235,6 @@ namespace F95UpdatesChecker
             }
         }
         /// <summary>
-        /// Flag for "Login" command is running checks.
-        /// </summary>
-        public bool LoginRunning
-        {
-            get => loginRunning;
-            set
-            {
-                loginRunning = value;
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-        /// <summary>
         /// Flag for "Save changes" command is running checks.
         /// </summary>
         public bool SaveChangesRunning
@@ -277,6 +268,7 @@ namespace F95UpdatesChecker
             set
             {
                 getLatestVersionsRunning = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GetLatestVersionsRunning)));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -345,10 +337,6 @@ namespace F95UpdatesChecker
         /// </summary>
         private bool addGameInfoRunning = false;
         /// <summary>
-        /// Flag for "Login" command is running checks.
-        /// </summary>
-        private bool loginRunning = false;
-        /// <summary>
         /// Flag for "Save changes" command is running checks.
         /// </summary>
         private bool saveChangesRunning = false;
@@ -367,8 +355,14 @@ namespace F95UpdatesChecker
         /// </summary>
         private int currentlyUpdatingGameInfoIndex = 0;
 
+        /// <summary>
+        /// Flag for checking if groups were initialized.
+        /// </summary>
         private bool isGroupsInitialized = false;
-        private int groupsCount = 0;
+        /// <summary>
+        /// Group count.
+        /// </summary>
+        private int groupCount = 0;
 
         #endregion
 
@@ -402,7 +396,7 @@ namespace F95UpdatesChecker
                 GameInfoViewModelsCollection = new ObservableCollection<F95GameInfoViewModel>(gameInfoCollection.Select(gi => new F95GameInfoViewModel(httpClient, gi)));
 
             InitializeListViewGroups();
-            groupsCount = GetUniqueGameInfoGroups(gameInfoViewModelsCollection).Count;
+            groupCount = GetUniqueGameInfoGroups(gameInfoViewModelsCollection).Count;
 
             SetGameInfoViewModelsCollectionFilter();
             SortGameInfoViewModelsCollection();
@@ -454,8 +448,7 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = !string.IsNullOrWhiteSpace(UserInputString) && UserInputString.Contains(F95Urls.ThreadsUrl) && !AddGameInfoRunning && !LoginRunning &&
-                        !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
+                    e1.CanExecute = !string.IsNullOrWhiteSpace(UserInputString) && UserInputString.Contains(F95Urls.ThreadsUrl) && !IsSomeOperationRunning();
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.RemoveGameInfoCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -470,7 +463,23 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
+                    e1.CanExecute = !IsSomeOperationRunning();
+                }));
+            CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CopyTextCommand,
+                (object sender1, ExecutedRoutedEventArgs e1) =>
+                {
+                },
+                (object sender1, CanExecuteRoutedEventArgs e1) =>
+                {
+                    e1.CanExecute = true;
+                }));
+            CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CopyLinkCommand,
+                (object sender1, ExecutedRoutedEventArgs e1) =>
+                {
+                },
+                (object sender1, CanExecuteRoutedEventArgs e1) =>
+                {
+                    e1.CanExecute = true;
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.SyncGameVersionsCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -486,8 +495,7 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = (e1.Parameter is F95GameInfoViewModel gameInfoViewModel) && !gameInfoViewModel.AreVersionsMatch && !AddGameInfoRunning && !LoginRunning &&
-                        !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
+                    e1.CanExecute = (e1.Parameter is F95GameInfoViewModel gameInfoViewModel) && !gameInfoViewModel.AreVersionsMatch && !IsSomeOperationRunning();
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.SaveGameInfoCollection,
                 async (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -512,13 +520,12 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = HaveChanges && !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
+                    e1.CanExecute = HaveChanges && !IsSomeOperationRunning();
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.GetLatestGameVersionsCommand,
                 async (object sender1, ExecutedRoutedEventArgs e1) =>
                 {
                     GetLatestVersionsRunning = !GetLatestVersionsRunning;
-                    getLatestGameVersionsButton.Content = "Stop";
 
                     var haveChanges = false;
 
@@ -526,10 +533,7 @@ namespace F95UpdatesChecker
                     foreach (var gameInfoViewModel in GameInfoViewModelsCollection)
                     {
                         if (!GetLatestVersionsRunning)
-                        {
-                            getLatestGameVersionsButton.Content = "Check for updates";
                             break;
-                        }
 
                         try
                         {
@@ -539,7 +543,6 @@ namespace F95UpdatesChecker
                         {
                             CurrentlyUpdatingGameInfoIndex = 0;
                             HaveChanges = haveChanges;
-                            getLatestGameVersionsButton.Content = "Check for updates";
                             SortGameInfoViewModelsCollection();
                             GetLatestVersionsRunning = false;
 
@@ -554,11 +557,10 @@ namespace F95UpdatesChecker
                     SortGameInfoViewModelsCollection();
                     HaveChanges = haveChanges;
                     GetLatestVersionsRunning = false;
-                    getLatestGameVersionsButton.Content = "Check for updates";
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionRunning /*&& !GetLatestVersionsRunning*/;
+                    e1.CanExecute = !AddGameInfoRunning && !SaveChangesRunning && !GetLatestVersionRunning;
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.GetLatestGameVersionCommand,
                 async (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -588,7 +590,7 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = !AddGameInfoRunning && !LoginRunning && !SaveChangesRunning && !GetLatestVersionRunning && !GetLatestVersionsRunning;
+                    e1.CanExecute = !IsSomeOperationRunning();
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.OpenInBrowserCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -616,7 +618,7 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = groupsCount > 1;
+                    e1.CanExecute = groupCount > 1;
                 }));
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.CollapseGroupsCommand,
                 (object sender1, ExecutedRoutedEventArgs e1) =>
@@ -627,10 +629,15 @@ namespace F95UpdatesChecker
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
-                    e1.CanExecute = groupsCount > 1;
+                    e1.CanExecute = groupCount > 1;
                 }));
 
             CommandManager.InvalidateRequerySuggested();
+        }
+
+        private bool IsSomeOperationRunning()
+        {
+            return AddGameInfoRunning || SaveChangesRunning || GetLatestVersionRunning || GetLatestVersionsRunning;
         }
 
         private void InitializeListViewGroups()
@@ -851,8 +858,8 @@ namespace F95UpdatesChecker
                 gameInfoViewModel.Group = newGroup;
 
                 var groups = GetUniqueGameInfoGroups(GameInfoViewModelsCollection);
-                groupsCount = groups.Count;
-                if (groupsCount <= 1)
+                groupCount = groups.Count;
+                if (groupCount <= 1)
                     DisableListViewGroups();
                 else
                     InitializeListViewGroups();
