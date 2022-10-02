@@ -97,6 +97,38 @@ namespace F95UpdatesChecker
 
         public bool HasCurrentVersion => CurrentVersion != F95GameInfo.EmptyFieldString;
 
+        /// <summary>
+        /// Date and time of when was the last time game checked for updates.
+        /// </summary>
+        public DateTime LastChecked
+        {
+            get => gameInfo.LastChecked;
+            set
+            {
+                if (gameInfo.LastChecked != value)
+                {
+                    gameInfo.LastChecked = value;
+                    RaisePropertyChanged(nameof(LastChecked));
+                }
+            }
+        }
+        /// <summary>
+        /// Version which was actual when last checked for updates.
+        /// </summary>
+        public string LastCheckedVersion
+        {
+            get => gameInfo.LastCheckedVersion;
+            set
+            {
+                if (gameInfo.LastCheckedVersion != value)
+                {
+                    gameInfo.LastCheckedVersion = value;
+                    RaisePropertyChanged(nameof(LastCheckedVersion));
+                }
+            }
+        }
+
+
         public F95GameInfo GameInfo
         {
             get => gameInfo;
@@ -161,9 +193,10 @@ namespace F95UpdatesChecker
         public async Task<bool> RefreshLatestVersionAsync()
         {
             var threadName = await GetGameThreadNameAsync();
+            LastChecked = DateTime.Now;
             if (threadName == null)
             {
-                Tools.ShowErrorMessage($"Couldn\'t find thread \"{gameInfo.Id}\". Make sure it exists and you entered it correctly!");
+                Tools.ShowErrorMessage($"Couldn\'t find thread \"{Name}\" ({gameInfo.Id}). Make sure it exists and you entered it correctly!");
                 return false;
             }
             else
@@ -171,6 +204,7 @@ namespace F95UpdatesChecker
                 var newLatestVersion = GetGameVersion(threadName);
                 if (newLatestVersion != null)
                 {
+                    LastCheckedVersion = newLatestVersion;
                     if (LatestVersion != newLatestVersion)
                     {
                         LatestVersion = newLatestVersion;
@@ -181,7 +215,7 @@ namespace F95UpdatesChecker
                 }
                 else
                 {
-                    Tools.ShowErrorMessage($"Couldn\'t get game version from thread \"{gameInfo.Id}\"!");
+                    Tools.ShowErrorMessage($"Couldn\'t get game version from thread \"{Name}\" ({gameInfo.Id})!");
                     return false;
                 }
             }
@@ -328,6 +362,15 @@ namespace F95UpdatesChecker
         public bool IsFavorite { get; set; } = false;
 
         public bool IsVersionFinished { get; set; } = false;
+
+        /// <summary>
+        /// Date and time of when was the last time game checked for updates.
+        /// </summary>
+        public DateTime LastChecked { get; set; }
+        /// <summary>
+        /// Version which was actual when last checked for updates.
+        /// </summary>
+        public string LastCheckedVersion { get; set; } = EmptyFieldString;
 
         #endregion
 

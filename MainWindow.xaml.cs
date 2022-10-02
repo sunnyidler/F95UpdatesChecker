@@ -1,6 +1,10 @@
-﻿using Flurl.Http;
+﻿using F95UpdatesChecker.Properties;
+
+using Flurl.Http;
 
 using Microsoft.Xaml.Behaviors;
+
+using REghZyFramework.Themes;
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +14,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -186,6 +191,8 @@ namespace F95UpdatesChecker
             set
             {
                 sortOrder = value;
+                if (settings != null)
+                    settings.SortOrder = sortOrder;
                 RaisePropertyChanged(nameof(SortOrder));
 
                 SortGameInfoViewModelsCollection();
@@ -202,6 +209,8 @@ namespace F95UpdatesChecker
                 if (givePriorityToFavoritesWhileSorting != value)
                 {
                     givePriorityToFavoritesWhileSorting = value;
+                    if (settings != null)
+                        settings.GivePriorityToFavoritesWhileSorting = givePriorityToFavoritesWhileSorting;
                     RaisePropertyChanged(nameof(GivePriorityToFavoritesWhileSorting));
 
                     SortGameInfoViewModelsCollection();
@@ -289,6 +298,41 @@ namespace F95UpdatesChecker
             }
         }
 
+        /// <summary>
+        /// Date and time of when was the last time games collection checked for updates.
+        /// </summary>
+        public DateTime LastChecked
+        {
+            get => lastChecked;
+            set
+            {
+                if (lastChecked != value)
+                {
+                    lastChecked = value;
+                    if (settings != null)
+                        settings.LastChecked = lastChecked;
+                    RaisePropertyChanged(nameof(LastChecked));
+                }
+            }
+        }
+        /// <summary>
+        /// Flag for identification of whether dark theme enabled.
+        /// </summary>
+        public bool IsDarkThemeEnabled
+        {
+            get => isDarkThemeEnabled;
+            set
+            {
+                if (isDarkThemeEnabled != value)
+                {
+                    isDarkThemeEnabled = value;
+                    if (settings != null)
+                        settings.IsDarkThemeEnabled = isDarkThemeEnabled;
+                    RaisePropertyChanged(nameof(IsDarkThemeEnabled));
+                }
+            }
+        }
+
         #endregion
 
         #region Private fields
@@ -364,6 +408,20 @@ namespace F95UpdatesChecker
         /// </summary>
         private int groupCount = 0;
 
+        /// <summary>
+        /// Date and time of when was the last time games collection checked for updates.
+        /// </summary>
+        private DateTime lastChecked;
+        /// <summary>
+        /// Flag for identification of whether dark theme enabled.
+        /// </summary>
+        private bool isDarkThemeEnabled = true;
+
+        /// <summary>
+        /// Settings storage.
+        /// </summary>
+        private Settings settings;
+
         #endregion
 
         #region Constructors
@@ -404,6 +462,21 @@ namespace F95UpdatesChecker
             InitializeCommandBindings();
 
             var items = gameInfoViewModelsListView.Items;
+
+            // Load saved settings
+            settings = await Settings.LoadSettingsFromFileAsync();
+
+            // Apply loaded settings
+            LastChecked = settings.LastChecked;
+            if (settings.IsListsCollapsed)
+                F95UpdatesCheckerCommands.CollapseGroupsCommand.Execute(null, null);
+            else
+                F95UpdatesCheckerCommands.ExpandGroupsCommand.Execute(null, null);
+            SortOrder = settings.SortOrder;
+            GivePriorityToFavoritesWhileSorting = settings.GivePriorityToFavoritesWhileSorting;
+            IsDarkThemeEnabled = settings.IsDarkThemeEnabled;
+
+            ThemesController.SetTheme(ThemesController.ThemeTypes.Light);
         }
 
         /// <summary>
@@ -529,6 +602,7 @@ namespace F95UpdatesChecker
             CommandBindings.Add(new CommandBinding(F95UpdatesCheckerCommands.GetLatestGameVersionsCommand,
                 async (object sender1, ExecutedRoutedEventArgs e1) =>
                 {
+                    LastChecked = DateTime.Now;
                     GetLatestVersionsRunning = !GetLatestVersionsRunning;
 
                     var haveChanges = false;
@@ -619,6 +693,9 @@ namespace F95UpdatesChecker
                     var expanders = GetVisualTreeObjects<Expander>(gameInfoViewModelsListView);
                     foreach (var expander in expanders)
                         expander.IsExpanded = true;
+
+                    if (settings != null)
+                        settings.IsListsCollapsed = false;
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
@@ -630,6 +707,9 @@ namespace F95UpdatesChecker
                     var expanders = GetVisualTreeObjects<Expander>(gameInfoViewModelsListView);
                     foreach (var expander in expanders)
                         expander.IsExpanded = false;
+
+                    if (settings != null)
+                        settings.IsListsCollapsed = true;
                 },
                 (object sender1, CanExecuteRoutedEventArgs e1) =>
                 {
@@ -750,10 +830,12 @@ namespace F95UpdatesChecker
             };
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (HaveChanges && (Tools.ShowQuestionMessage("Games collection changed. Save changes?") == MessageBoxResult.Yes))
                 F95UpdatesCheckerCommands.SaveGameInfoCollection.Execute(null, this);
+
+            await Settings.SaveSettingsToFileAsync(settings);
         }
 
         private void OpenUrlInDefaultBrowser(string url)
@@ -941,6 +1023,16 @@ namespace F95UpdatesChecker
             return objects;
         }
 
+        private void UseDarkThemeCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ThemesController.SetTheme(ThemesController.ThemeTypes.Dark);
+        }
+
+        private void UseDarkThemeCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ThemesController.SetTheme(ThemesController.ThemeTypes.Light);
+        }
+
         #endregion
     }
 
@@ -950,7 +1042,7 @@ namespace F95UpdatesChecker
 
         public static void ShowErrorMessage(string message)
         {
-            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowNonBlockingMessageBox(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         public static void ShowWarningMessage(string message)
@@ -966,6 +1058,15 @@ namespace F95UpdatesChecker
         public static MessageBoxResult ShowQuestionMessage(string message)
         {
             return MessageBox.Show(message, "Information", MessageBoxButton.YesNo, MessageBoxImage.Information);
+        }
+
+        #endregion
+
+        #region Private methods
+
+        private static void ShowNonBlockingMessageBox(string text, string caption, MessageBoxButton button, MessageBoxImage image)
+        {
+            new Thread(() => MessageBox.Show(text, caption, button, image)).Start();
         }
 
         #endregion
