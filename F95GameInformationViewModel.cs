@@ -353,7 +353,7 @@ namespace F95UpdatesChecker
 
         public string Name { get; set; }
 
-        public string Group { get; set; } = EmptyFieldString;
+        public string Group { get; set; } = DefaultGroup;
 
         public string CurrentVersion { get; set; } = EmptyFieldString;
 
@@ -376,6 +376,7 @@ namespace F95UpdatesChecker
 
         #region Public fields
 
+        public const string DefaultGroup = "No group";
         public const string EmptyFieldString = "-";
 
         #endregion
@@ -431,6 +432,11 @@ namespace F95UpdatesChecker
             {
                 fs = File.OpenRead(gameInfoCollectionFileName);
                 var gameInfoCollection = await JsonSerializer.DeserializeAsync<List<F95GameInfo>>(fs);
+                foreach (var gameInfo in gameInfoCollection)
+                {
+                    if (gameInfo.Group == F95GameInfo.EmptyFieldString)
+                        gameInfo.Group = F95GameInfo.DefaultGroup;
+                }
 
                 return gameInfoCollection;
             }

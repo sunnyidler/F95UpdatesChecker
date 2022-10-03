@@ -15,7 +15,8 @@
         MinWidth="1000"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
-        x:Name="mainWindow">
+        x:Name="mainWindow"
+        Focusable="True">
     <Window.Resources>
         <ResourceDictionary x:Uid="ResourceDictionary_3">
             <ResourceDictionary.MergedDictionaries>
@@ -79,14 +80,14 @@
                                 <Grid Background="Transparent"
                                       SnapsToDevicePixels="False">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="25" />
+                                        <ColumnDefinition Width="30" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="expenderToggleButtonText"
-                                               Text=">"
+                                               Text="+"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
-                                               FontSize="18"
+                                               FontSize="16"
                                                FontWeight="Bold"
                                                Margin="4"
                                                Foreground="Gray" />
@@ -103,7 +104,7 @@
                                          Value="true">
                                     <Setter Property="Text"
                                             TargetName="expenderToggleButtonText"
-                                            Value="∨" />
+                                            Value="-" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -149,7 +150,7 @@
                                                   IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   Margin="1"
                                                   MinWidth="0"
-                                                  MinHeight="0"
+                                                  Height="30"
                                                   Padding="{TemplateBinding Padding}"
                                                   Style="{StaticResource ExpanderDownHeaderStyle}"
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -1374,19 +1375,46 @@
                          Margin="0,5,5,5"
                          MouseDoubleClick="UserInputTextBox_MouseDoubleClick">
                     <TextBox.Style>
-                        <Style TargetType="TextBox">
+                        <Style TargetType="TextBox"
+                               xmlns:sys="clr-namespace:System;assembly=mscorlib">
                             <Style.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius"
                                             Value="3" />
                                 </Style>
+                                <VisualBrush x:Key="CueBannerBrush"
+                                             AlignmentX="Left"
+                                             AlignmentY="Center"
+                                             Stretch="None">
+                                    <VisualBrush.Visual>
+                                        <Label Content="Enter an URL to add a game to the collection or enter search query to filter the collection"
+                                               Foreground="Gray" />
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
                             </Style.Resources>
+                            <Style.Triggers>
+                                <Trigger Property="Text"
+                                         Value="{x:Static sys:String.Empty}">
+                                    <Setter Property="Background"
+                                            Value="{StaticResource CueBannerBrush}" />
+                                </Trigger>
+                                <Trigger Property="Text"
+                                         Value="{x:Null}">
+                                    <Setter Property="Background"
+                                            Value="{StaticResource CueBannerBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused"
+                                         Value="True">
+                                    <Setter Property="Background"
+                                            Value="White" />
+                                </Trigger>
+                            </Style.Triggers>
+
                         </Style>
                     </TextBox.Style>
                 </TextBox>
                 <Button Grid.Row="0"
                         Grid.Column="1"
-                        Style="{DynamicResource buttonStyle}"
                         Margin="5,5,0,5"
                         VerticalAlignment="Bottom"
                         Command="{x:Static local:F95UpdatesCheckerCommands.AddGameInfoCommand}">
@@ -1394,6 +1422,36 @@
                         <Image Source="{StaticResource icon_Add}"
                                Margin="3" />
                     </Button.Content>
+                    <Button.Style>
+                        <Style TargetType="Button"
+                               BasedOn="{StaticResource buttonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}"
+                                             Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard Storyboard.TargetProperty="Background.Color"
+                                                        RepeatBehavior="Forever"
+                                                        AutoReverse="True">
+                                                <ColorAnimation From="Gray"
+                                                                To="White"
+                                                                Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard FillBehavior="Stop">
+                                                <ColorAnimation Storyboard.TargetProperty="Background.Color"
+                                                                To="White"
+                                                                Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
                 </Button>
 
                 <ListView x:Name="gameInfoViewModelsListView"
@@ -1410,7 +1468,8 @@
                           VirtualizingStackPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="False">
                     <ListView.View>
-                        <GridView AllowsColumnReorder="False">
+                        <GridView x:Name="gridView"
+                                  AllowsColumnReorder="False">
                             <GridView.ColumnHeaderContainerStyle>
                                 <Style TargetType="{x:Type GridViewColumnHeader}">
                                     <Setter Property="IsEnabled"
@@ -1435,7 +1494,13 @@
                                             <TextBlock Text="{Binding Name}"
                                                        VerticalAlignment="Center"
                                                        HorizontalAlignment="Center"
-                                                       FontSize="16">
+                                                       FontSize="16"
+                                                       ToolTipService.InitialShowDelay="0"
+                                                       ToolTipService.ShowDuration="9999999"
+                                                       TextTrimming="CharacterEllipsis">
+                                                <TextBlock.ToolTip>
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </TextBlock.ToolTip>
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="FontWeight"
@@ -1495,10 +1560,11 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource buttonStyle}"
-                                                    Margin="5"
                                                     HorizontalAlignment="Center"
                                                     Command="{x:Static local:F95UpdatesCheckerCommands.GetLatestGameVersionCommand}"
-                                                    CommandParameter="{Binding .}">
+                                                    CommandParameter="{Binding .}"
+                                                    ToolTipService.InitialShowDelay="0"
+                                                    ToolTipService.ShowDuration="9999999">
                                                 <Button.ToolTip>
                                                     <TextBlock>
                                                         <Run Text="Check for updates" />
@@ -1540,7 +1606,6 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource buttonStyle}"
-                                                    Margin="5"
                                                     HorizontalAlignment="Center"
                                                     ToolTip="Sync with latest version"
                                                     Command="{x:Static local:F95UpdatesCheckerCommands.SyncGameVersionsCommand}"
@@ -1581,7 +1646,6 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox x:Name="isVersionFinishedCheckBox"
-                                                      Margin="10,0,0,0"
                                                       Content=""
                                                       HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
@@ -1597,7 +1661,6 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox x:Name="isFavoriteCheckBox"
-                                                      Margin="10,0,0,0"
                                                       Content=""
                                                       HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
@@ -1613,7 +1676,6 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource buttonStyle}"
-                                                    Margin="5"
                                                     HorizontalAlignment="Center"
                                                     ToolTip="Open thread in default browser"
                                                     Command="{x:Static local:F95UpdatesCheckerCommands.OpenInBrowserCommand}"
@@ -1641,13 +1703,15 @@
                                     Value="Stretch" />
                             <Setter Property="Foreground"
                                     Value="Black" />
+                            <Setter Property="Height"
+                                    Value="35" />
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
                                     <ContextMenu>
-                                        <MenuItem Header="Copy text"
+                                        <MenuItem Header="Copy name"
                                                   Command="{x:Static local:F95UpdatesCheckerCommands.CopyNameCommand}"
                                                   CommandParameter="{Binding .}" />
-                                        <MenuItem Header="Copy link"
+                                        <MenuItem Header="Copy URL"
                                                   Command="{x:Static local:F95UpdatesCheckerCommands.CopyLinkCommand}"
                                                   CommandParameter="{Binding .}" />
                                         <MenuItem Header="Remove"
@@ -1713,10 +1777,10 @@
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock FontWeight="Bold"
                                                                        Foreground="Black"
-                                                                       FontSize="18"
+                                                                       FontSize="16"
                                                                        VerticalAlignment="Center"
                                                                        HorizontalAlignment="Center"
-                                                                       Margin="10,0,0,0">
+                                                                       Margin="0,0,0,0">
                                                                     <Run Text="{Binding Name, Mode=OneWay}" />
                                                                     <Run Text="(" /><Run Text="{Binding ItemCount, Mode=OneWay}" /><Run Text=")" />
                                                             </TextBlock>
@@ -1784,7 +1848,7 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Left">
                     <Button Style="{StaticResource buttonStyle}"
-                            Margin="10,0,10,0"
+                            Margin="10,0,5,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Command="{x:Static local:F95UpdatesCheckerCommands.CollapseGroupsCommand}"
@@ -1795,7 +1859,7 @@
                         </Button.Content>
                     </Button>
                     <Button Style="{StaticResource buttonStyle}"
-                            Margin="10,0,10,0"
+                            Margin="5,0,10,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Command="{x:Static local:F95UpdatesCheckerCommands.ExpandGroupsCommand}"
@@ -1830,15 +1894,15 @@
                             <CheckBox Style="{DynamicResource RoundedCheckBoxStyle}"
                                       Content="Prioritize favorites"
                                       IsChecked="{Binding GivePriorityToFavoritesWhileSorting}"
-                                      VerticalAlignment="Center"/>
+                                      VerticalAlignment="Center" />
                             <CheckBox x:Name="useDarkThemeCheckBox"
-                                      Margin="0,0,0,0"
+                                      Visibility="Collapsed"
                                       Style="{DynamicResource RoundedCheckBoxStyle}"
                                       Content="Use dark theme"
                                       IsChecked="{Binding IsDarkThemeEnabled}"
                                       Checked="UseDarkThemeCheckBox_Checked"
                                       Unchecked="UseDarkThemeCheckBox_Unchecked"
-                                      VerticalAlignment="Center"/>
+                                      VerticalAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -1846,18 +1910,47 @@
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
-                    <Button Style="{StaticResource buttonStyle}"
-                            Margin="10,0,10,0"
+                    <Button Margin="10,0,5,0"
                             VerticalAlignment="Center"
                             Command="{x:Static local:F95UpdatesCheckerCommands.SaveGameInfoCollection}"
-                            ToolTip="Save game collection">
+                            ToolTip="Save games collection">
                         <Button.Content>
                             <Image Source="{StaticResource icon_Save}"
                                    Margin="3" />
                         </Button.Content>
+                        <Button.Style>
+                            <Style TargetType="Button"
+                                   BasedOn="{StaticResource buttonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HaveChanges, ElementName=mainWindow}"
+                                                 Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard Storyboard.TargetProperty="Background.Color"
+                                                            RepeatBehavior="Forever"
+                                                            AutoReverse="True">
+                                                    <ColorAnimation From="Gray"
+                                                                    To="White"
+                                                                    Duration="0:0:0.5" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard FillBehavior="Stop">
+                                                    <ColorAnimation Storyboard.TargetProperty="Background.Color"
+                                                                    To="White"
+                                                                    Duration="0:0:0.5" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                     </Button>
                     <Button x:Name="getLatestGameVersionsButton"
-                            Margin="10,0,10,0"
+                            Margin="5,0,10,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Command="{x:Static local:F95UpdatesCheckerCommands.GetLatestGameVersionsCommand}"
@@ -1900,9 +1993,9 @@
             </Grid>
             <ProgressBar Minimum="0"
                          Maximum="{Binding GameInfoViewModelsCollection.Count}"
-                         Value="{Binding CurrentlyUpdatingGameInfoIndex, Mode=OneWay}"
                          Height="5"
-                         VerticalAlignment="Bottom">
+                         VerticalAlignment="Bottom"
+                         local:ProgressBarSmoother.SmoothValue="{Binding CurrentlyUpdatingGameInfoIndex, Mode=OneWay}">
                 <ProgressBar.Style>
                     <Style TargetType="ProgressBar">
                         <Setter Property="Visibility"

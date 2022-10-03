@@ -20,6 +20,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace F95UpdatesChecker
 {
@@ -227,6 +228,7 @@ namespace F95UpdatesChecker
             set
             {
                 haveChanges = value;
+                RaisePropertyChanged(nameof(HaveChanges));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -1193,5 +1195,27 @@ namespace F95UpdatesChecker
 
 
         #endregion
+    }
+
+    public class ProgressBarSmoother
+    {
+        public static double GetSmoothValue(DependencyObject obj)
+        {
+            return (double)obj.GetValue(SmoothValueProperty);
+        }
+
+        public static void SetSmoothValue(DependencyObject obj, double value)
+        {
+            obj.SetValue(SmoothValueProperty, value);
+        }
+
+        public static readonly DependencyProperty SmoothValueProperty =
+            DependencyProperty.RegisterAttached("SmoothValue", typeof(double), typeof(ProgressBarSmoother), new PropertyMetadata(0.0, SmoothValueChanged));
+
+        private static void SmoothValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var anim = new DoubleAnimation((double)e.OldValue, (double)e.NewValue, new TimeSpan(0, 0, 0, 0, 500));
+            (d as ProgressBar).BeginAnimation(ProgressBar.ValueProperty, anim, HandoffBehavior.Compose);
+        }
     }
 }
