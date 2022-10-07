@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace F95UpdatesChecker
 {
@@ -353,9 +354,35 @@ namespace F95UpdatesChecker
 
         public string Name { get; set; }
 
-        public string Group { get; set; } = DefaultGroup;
+        public string Group
+        {
+            get => group;
+            set
+            {
+                if (group != value)
+                {
+                    if (value == string.Empty)
+                        group = DefaultGroup;
+                    else
+                        group = value;
+                }
+            }
+        }
 
-        public string CurrentVersion { get; set; } = EmptyFieldString;
+        public string CurrentVersion
+        {
+            get => currentVersion;
+            set
+            {
+                if (currentVersion != value)
+                {
+                    if (value == string.Empty)
+                        currentVersion = EmptyFieldString;
+                    else
+                        currentVersion = value;
+                }
+            }
+        }
 
         public string LatestVersion { get; set; } = EmptyFieldString;
 
@@ -377,7 +404,10 @@ namespace F95UpdatesChecker
         #region Public fields
 
         public const string DefaultGroup = "No group";
+        private string group = DefaultGroup;
+
         public const string EmptyFieldString = "-";
+        private string currentVersion = EmptyFieldString;
 
         #endregion
 

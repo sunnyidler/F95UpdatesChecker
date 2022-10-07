@@ -6,7 +6,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:F95UpdatesChecker"
         xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-        xmlns:themes="clr-namespace:REghZyFramework.Themes"
         mc:Ignorable="d"
         Title="F95UpdatesChecker"
         Height="600"
@@ -181,6 +180,7 @@
                 </Setter>
             </Style>
             <local:SortOrderToStringConverter x:Key="SortOrderToStringConverter" />
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">
                     <Setter.Value>
@@ -1896,9 +1896,9 @@
                                       IsChecked="{Binding GivePriorityToFavoritesWhileSorting}"
                                       VerticalAlignment="Center" />
                             <CheckBox x:Name="useDarkThemeCheckBox"
-                                      Visibility="Collapsed"
                                       Style="{DynamicResource RoundedCheckBoxStyle}"
                                       Content="Use dark theme"
+                                      Visibility="Collapsed"
                                       IsChecked="{Binding IsDarkThemeEnabled}"
                                       Checked="UseDarkThemeCheckBox_Checked"
                                       Unchecked="UseDarkThemeCheckBox_Unchecked"
@@ -1913,7 +1913,8 @@
                     <Button Margin="10,0,5,0"
                             VerticalAlignment="Center"
                             Command="{x:Static local:F95UpdatesCheckerCommands.SaveGameInfoCollection}"
-                            ToolTip="Save games collection">
+                            ToolTip="Save games collection"
+                            Visibility="{Binding HaveChanges, ElementName=mainWindow, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Button.Content>
                             <Image Source="{StaticResource icon_Save}"
                                    Margin="3" />

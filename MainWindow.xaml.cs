@@ -4,8 +4,6 @@ using Flurl.Http;
 
 using Microsoft.Xaml.Behaviors;
 
-using REghZyFramework.Themes;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -477,8 +475,6 @@ namespace F95UpdatesChecker
             SortOrder = settings.SortOrder;
             GivePriorityToFavoritesWhileSorting = settings.GivePriorityToFavoritesWhileSorting;
             IsDarkThemeEnabled = settings.IsDarkThemeEnabled;
-
-            ThemesController.SetTheme(ThemesController.ThemeTypes.Light);
         }
 
         /// <summary>
@@ -511,6 +507,10 @@ namespace F95UpdatesChecker
                         {
                             GameInfoViewModelsCollection.Add(gameInfoViewModel);
                             SortGameInfoViewModelsCollection();
+
+                            userInputTextBox.Text = string.Empty;
+
+                            gameInfoViewModelsListView.UpdateLayout();
                             gameInfoViewModelsListView.ScrollIntoView(gameInfoViewModel);
 
                             HaveChanges = true;
@@ -1027,12 +1027,10 @@ namespace F95UpdatesChecker
 
         private void UseDarkThemeCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            ThemesController.SetTheme(ThemesController.ThemeTypes.Dark);
         }
 
         private void UseDarkThemeCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            ThemesController.SetTheme(ThemesController.ThemeTypes.Light);
         }
 
         #endregion
@@ -1216,6 +1214,22 @@ namespace F95UpdatesChecker
         {
             var anim = new DoubleAnimation((double)e.OldValue, (double)e.NewValue, new TimeSpan(0, 0, 0, 0, 500));
             (d as ProgressBar).BeginAnimation(ProgressBar.ValueProperty, anim, HandoffBehavior.Compose);
+        }
+    }
+
+    public class BoolToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue)
+                return boolValue ? Visibility.Visible : Visibility.Collapsed;
+
+            return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }
