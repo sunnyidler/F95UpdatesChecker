@@ -3,6 +3,7 @@
 using Flurl.Http;
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -62,6 +63,7 @@ namespace F95UpdatesChecker
                 if (gameInfo.LatestVersion != value)
                 {
                     gameInfo.LatestVersion = value;
+                    IsLatestVersionChanged = true;
                     RaisePropertyChanged(nameof(LatestVersion));
                     RaisePropertyChanged(nameof(AreVersionsMatch));
                 }
@@ -129,7 +131,6 @@ namespace F95UpdatesChecker
             }
         }
 
-
         public F95GameInfo GameInfo
         {
             get => gameInfo;
@@ -149,6 +150,19 @@ namespace F95UpdatesChecker
             }
         }
 
+        public bool IsLatestVersionChanged
+        {
+            get => isLatestVersionChanged;
+            set
+            {
+                if (isLatestVersionChanged != value)
+                {
+                    isLatestVersionChanged = value;
+                    RaisePropertyChanged(nameof(IsLatestVersionChanged));
+                }
+            }
+        }
+
         #endregion
 
         #region Private fields
@@ -156,6 +170,8 @@ namespace F95UpdatesChecker
         private F95GameInfo gameInfo;
 
         private readonly FlurlClient httpClient;
+
+        private bool isLatestVersionChanged = false; 
 
         #endregion
 

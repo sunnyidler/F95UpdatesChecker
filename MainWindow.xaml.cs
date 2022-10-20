@@ -584,6 +584,8 @@ namespace F95UpdatesChecker
                     try
                     {
                         _ = await F95GameInfoTools.SaveGameInfoCollectionToFileAsync(GameInfoViewModelsCollection.Any() ? GameInfoViewModelsCollection.Select(vm => vm.GameInfo).ToList() : new List<F95GameInfo>());
+                        foreach (var gameInfoViewModel in GameInfoViewModelsCollection.Where(gameInfoViewModel => gameInfoViewModel != null))
+                            gameInfoViewModel.IsLatestVersionChanged = false;
                     }
                     catch
                     {

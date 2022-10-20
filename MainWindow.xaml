@@ -180,7 +180,7 @@
                 </Setter>
             </Style>
             <local:SortOrderToStringConverter x:Key="SortOrderToStringConverter" />
-            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">
                     <Setter.Value>
@@ -1736,6 +1736,29 @@
                                 </Setter.Value>
                             </Setter>
                             <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLatestVersionChanged}"
+                                             Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard Storyboard.TargetProperty="Background.Color"
+                                                        RepeatBehavior="Forever"
+                                                        AutoReverse="True">
+                                                <ColorAnimation From="Gray"
+                                                                To="White"
+                                                                Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard FillBehavior="Stop">
+                                                <ColorAnimation Storyboard.TargetProperty="Background.Color"
+                                                                To="White"
+                                                                Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
                                 <DataTrigger Binding="{Binding AreVersionsMatch}"
                                              Value="True">
                                     <Setter Property="Background"
