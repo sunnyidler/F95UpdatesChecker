@@ -276,14 +276,11 @@ namespace F95UpdatesChecker
 
         private static string GetGameName(string threadName)
         {
-            var nameBeginIndex = -1;
+            var nameBeginIndex = 0;
             var nameEndIndex = -1;
 
             for (int i = 0; i < threadName.Length; i++)
             {
-                if ((nameBeginIndex == -1) && (threadName[i] == ']') && ((i + 2) < threadName.Length) && (threadName[i + 2] != '['))
-                    nameBeginIndex = i + 2;
-
                 if ((nameBeginIndex != -1) && (threadName[i] == '['))
                     nameEndIndex = i - 1;
 
@@ -300,18 +297,17 @@ namespace F95UpdatesChecker
             var versionEndIndex = -1;
 
             for (int i = 0; i < threadName.Length; i++)
-                if ((threadName[i] == ']') && ((i + 2) < threadName.Length) && (threadName[i + 2] != '['))
-                    for (int j = i + 2; j < threadName.Length; j++)
-                    {
-                        if ((versionBeginIndex == -1) && (threadName[j] == '[') && ((j + 1) < threadName.Length))
-                            versionBeginIndex = j + 1;
+            {
+                if ((versionBeginIndex == -1) && (threadName[i] == '[') && ((i + 1) < threadName.Length))
+                    versionBeginIndex = i + 1;
 
-                        if ((versionBeginIndex != -1) && (threadName[j] == ']'))
-                            versionEndIndex = j;
+                if ((versionBeginIndex != -1) && (threadName[i] == ']'))
+                    versionEndIndex = i;
 
-                        if ((versionBeginIndex != -1) && (versionEndIndex != -1))
-                            return threadName.Substring(versionBeginIndex, versionEndIndex - versionBeginIndex);
-                    }
+                if ((versionBeginIndex != -1) && (versionEndIndex != -1))
+                    return threadName.Substring(versionBeginIndex, versionEndIndex - versionBeginIndex);
+
+            }
 
             return null;
         }
