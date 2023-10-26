@@ -265,7 +265,10 @@ namespace F95UpdatesChecker
                 var htmlParser = new HtmlParser();
                 var parsedResponseContent = await htmlParser.ParseDocumentAsync(responseContent);
 
-                var threadName = parsedResponseContent.QuerySelector("h1[class=\"p-title-value\"]")?.TextContent;
+                
+                var threadNameFull = parsedResponseContent.QuerySelector("script[type=\"application/ld+json\"]")?.TextContent;
+                var threadName = Newtonsoft.Json.Linq.JObject.Parse(threadNameFull).GetValue("headline").ToString();
+
                 return threadName;
             }
             catch
